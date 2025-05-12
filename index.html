@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rhodium Token Raider</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #444;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="range"] {
+            width: auto;
+        }
+        #logs {
+            margin-top: 20px;
+            height: 200px;
+            border: 1px solid #ccc;
+            background: #222;
+            color: #eee;
+            padding: 10px;
+            overflow-y: scroll;
+            font-family: monospace;
+            white-space: pre-wrap;
+            border-radius: 5px;
+        }
+        .token-input {
+            margin-bottom: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: lightgreen;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rhodium Token Raider</h1>
+    <label>Use Tokens: <span id="tokenCountLabel">1</span>
+        <input type="range" id="tokenCount" min="1" max="5" value="1" />
+    </label>
+    <div id="tokenInputs">
+        <input class="token-input" type="text" placeholder="Token 1" />
+    </div>
+    <label>Server ID:
+        <input type="text" id="serverId" placeholder="Example: 123456789012345678" />
+    </label>
+    <label>Channel ID:
+        <input type="text" id="channelId" placeholder="Example: 123456789012345678" />
+    </label>
+    <label>Send Interval (ms):
+        <input type="number" id="interval" value="1000" min="100" />
+    </label>
+    <label>Message:
+        <textarea id="message" rows="4" placeholder="Send messages"></textarea>
+    </label>
+    <button id="startBtn">Run</button>
+    <button id="stopBtn" disabled>Stop</button>
+    <div id="logs"></div>
+    <script>
+        const tokenCountInput = document.getElementById('tokenCount');
+        const tokenCountLabel = document.getElementById('tokenCountLabel');
+        const tokenInputsDiv = document.getElementById('tokenInputs');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const logsDiv = document.getElementById('logs');
+
+        function updateTokenInputs(count) {
+            tokenInputsDiv.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const inp = document.createElement('input');
+                inp.type = 'text';
+                inp.placeholder = `Token ${i + 1}`;
+                inp.className = 'token-input';
+                tokenInputsDiv.appendChild(inp);
+            }
+        }
+
+        tokenCountInput.addEventListener('input', () => {
+            let count = parseInt(tokenCountInput.value, 10);
+            tokenCountLabel.textContent = count;
+            updateTokenInputs(count);
+        });
+
+        updateTokenInputs(parseInt(tokenCountInput.value, 10));
+
+        function log(msg, isSuccess = false) {
+            const now = new Date().toLocaleTimeString();
+            const logLine = document.createElement('div');
+            logLine.textContent = `[${now}] ${msg}`;
+            logLine.className = isSuccess ? 'success' : 'error';
+            logsDiv.appendChild(logLine);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        async function sendMessage(token, channelId, message) {
+            try {
+                const res = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content: message })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    log(`Token: ${token.slice(0, 10)}... Successful sending!: "${message}" (ID: ${data.id})`, true);
+                } else {
+                    log(`Token: ${token.slice(0, 10)}... Send error: Status ${res.status}`);
+                }
+            } catch (err) {
+                log(`Token: ${token.slice(0, 10)}... Error: ${err.message}`);
+            }
+        }
+
+        let sendIntervalId = null;
+
+        startBtn.addEventListener('click', () => {
+            const tokens = Array.from(document.querySelectorAll('.token-input'))
+                .map(input => input.value.trim())
+                .filter(t => t.length > 0);
+            const channelId = document.getElementById('channelId').value.trim();
+            const message = document.getElementById('message').value;
+            const intervalMs = parseInt(document.getElementById('interval').value, 10);
+
+            if (tokens.length === 0) {
+                alert('Please enter at least one token');
+                return;
+            }
+            if (!channelId) {
+                alert('Please enter your Channel ID');
+                return;
+            }
+            if (!message) {
+                alert('Enter the message you want to send');
+                return;
+            }
+            if (isNaN(intervalMs) || intervalMs < 100) {
+                alert('Please enter a value of 100ms or more for the transmission interval.');
+                return;
+            }
+
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+
+            log('Running tokens...');
+
+            sendIntervalId = setInterval(() => {
+                tokens.forEach(token => {
+                    sendMessage(token, channelId, message);
+                });
+            }, intervalMs);
+        });
+
+        stopBtn.addEventListener('click', () => {
+            if (sendIntervalId) {
+                clearInterval(sendIntervalId);
+                sendIntervalId = null;
+                log('Stopped');
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>
