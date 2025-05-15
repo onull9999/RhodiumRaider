@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,15 +97,15 @@
 <body>
     <div class="section">
         <h1>Rhodium Token Raider</h1>
-        <p>Developed by <a href="https://github.com/onull9999/" target="_blank">@onull9999</a></p>
-        <p><a href="https://discord.gg/invite-link" target="_blank">Join our Discord</a></p>
+        <p>Edit By <a href="https://github.com/onull9999/" target="_blank">@onull9999</a></p>
+        <p><a href="https://discord.gg/ここりんく" target="_blank">Join the Discord</a></p>
 
-        <h3><u>Version History</u></h3>
+        <h3><u>Update History</u></h3>
         <p>
-            <u>2025/5/12</u><br>Implemented Spammer<br>
-            <u>2025/5/13</u><br>Added GroupSpam<br>Added Logging<br>
-            <u>2025/5/14</u><br>Added ReactionSpammer<br>
-            <u>2025/5/15</u><br>Added Joinner
+            <u>2025/5/12</u><br>Spammerを実装<br>
+            <u>2025/5/13</u><br>GroupSpam実装<br>Log実装<br>
+            <u>2025/5/14</u><br>ReactionSpammer実装<br>
+            <u>2025/5/15</u><br>Joinner実装
         </p>
     </div>
 
@@ -119,7 +119,7 @@
             </select>
         </label>
         
-        <label>Number of Tokens: <span id="tokenCountLabel">1</span>
+        <label>Use Tokens: <span id="tokenCountLabel">1</span>
             <input type="range" id="tokenCount" min="1" max="10" value="1" />
         </label>
         <div id="tokenInputs"></div>
@@ -128,25 +128,25 @@
     <div id="spammerInputs" class="section">
         <label>Server ID: <input type="text" id="serverId" placeholder="Enter Server ID"></label>
         <label>Channel ID: <input type="text" id="channelId" placeholder="Enter Channel ID"></label>
-        <label>Message: <textarea id="message" rows="4" placeholder="Enter message content"></textarea></label>
+        <label>Message: <textarea id="message" rows="4" placeholder="Enter message to send"></textarea></label>
         <label>Send Interval (ms): <input type="number" id="interval" value="1000" min="100"></label>
     </div>
 
     <div id="groupSpamInputs" class="section hidden">
         <label>User ID(s) (comma-separated): <input type="text" id="userId" placeholder="Enter User IDs separated by commas"></label>
-        <label>Number of Groups: <input type="number" id="groupCount" value="1" min="1"></label>
-        <label>Group Name: <input type="text" id="groupName" placeholder="Enter group name"></label>
-        <label>Creation Interval (ms): <input type="number" id="createInterval" value="1000" min="100"></label>
+        <label>Groups to Create: <input type="number" id="groupCount" value="1" min="1"></label>
+        <label>Group Name: <input type="text" id="groupName" placeholder="Enter Group Name"></label>
+        <label>Create Interval (ms): <input type="number" id="createInterval" value="1000" min="100"></label>
     </div>
 
     <div id="reactionSpamInputs" class="section hidden">
         <label>Channel ID: <input type="text" id="channelIdReaction" placeholder="Enter Channel ID"></label>
         <label>Message ID: <input type="text" id="messageId" placeholder="Enter Message ID"></label>
-        <div id="emojiStatus">Emoji file: <span id="emojiCount">0</span> emojis loaded</div>
+        <div id="emojiStatus">絵文字ファイル: <span id="emojiCount">0</span> 個読み込み済み</div>
     </div>
 
     <div id="joinnerInputs" class="section hidden">
-        <label>Server Invite: <input type="text" id="serverLink" placeholder="Discord server invite link"></label>
+        <label>Server Link: <input type="text" id="serverLink" placeholder="Discord server invite link"></label>
     </div>
 
     <div class="section">
@@ -157,14 +157,14 @@
     </div>
 
     <div class="section">
-        <button id="startBtn">Start</button>
+        <button id="startBtn">Run</button>
         <button id="stopBtn" disabled>Stop</button>
         <button id="clearLogBtn">Clear Log</button>
-        <button id="testEmojiBtn">Test Emoji Loading</button>
+        <button id="testEmojiBtn">Test Emoji Load</button>
     </div>
 
     <div class="section">
-        <h3>Activity Log</h3>
+        <h3>Execution Log</h3>
         <div id="logs"></div>
     </div>
 
@@ -266,16 +266,13 @@
         }
 
         function isValidEmoji(emoji) {
-            // Unicode emoji
             if (/\p{Emoji}/u.test(emoji)) return true;
-            // Custom emoji (:emoji_name:)
             if (/^:[a-zA-Z0-9_]+:$/.test(emoji)) return true;
             return false;
         }
 
         async function reactToMessage(token, channelId, messageId, emoji) {
             try {
-                // URL encode the emoji
                 let encodedEmoji;
                 if (emoji.startsWith(':') && emoji.endsWith(':')) {
                     encodedEmoji = encodeURIComponent(emoji.slice(1, -1));
@@ -322,24 +319,28 @@
                 return false;
             }
 
-            log(`Adding ${state.emojis.length} emojis using ${tokens.length} tokens...`, 'info');
+            log(`Adding ${state.emojis.length} emojis using ${tokens.length} tokens simultaneously...`, 'info');
 
             let successCount = 0;
             let failCount = 0;
 
+            // すべての絵文字とトークンの組み合わせに対して並列処理
+            const promises = [];
+            
             for (const emoji of state.emojis) {
-                if (!state.isRunning) break;
-
                 for (const token of tokens) {
-                    if (!state.isRunning) break;
-                    
-                    const result = await reactToMessage(token, channelId, messageId, emoji);
-                    if (result) successCount++;
-                    else failCount++;
-
-                    await delay(500); // Rate limit prevention
+                    promises.push(
+                        reactToMessage(token, channelId, messageId, emoji)
+                            .then(result => {
+                                if (result) successCount++;
+                                else failCount++;
+                            })
+                    );
                 }
             }
+
+            // すべてのリクエストを並列実行
+            await Promise.all(promises);
 
             log(`Completed: ${successCount} succeeded, ${failCount} failed`, failCount === 0 ? 'success' : 'warning');
             return failCount === 0;
@@ -395,7 +396,7 @@
                 if (mode === 'reactionspam') {
                     await processReactionSpam();
                 }
-                // Other mode handlers...
+                // 他のモードの処理...
             } catch (error) {
                 log(`Operation error: ${error.message}`, 'error');
             } finally {
@@ -422,5 +423,3 @@
         // Initialize the application
         init();
     </script>
-</body>
-</html>
