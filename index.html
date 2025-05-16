@@ -1,8 +1,12 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧-->
+<!-- edit by onull9999 2025/5/12 -->
+<!--▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧--> 
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rhodium Token Raider</title>
     <style>
         body {
@@ -10,416 +14,363 @@
             margin: 20px;
             background-color: #f4f4f4;
             color: #333;
-            line-height: 1.6;
         }
         h1 {
             color: #444;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
         }
         label {
             display: block;
             margin-top: 15px;
-            font-weight: bold;
         }
-        input[type="text"], 
-        input[type="number"], 
-        textarea, 
-        select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            margin-top: 5px;
+        input[type="text"], input[type="number"], textarea {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
         }
-        input[type="range"] {
-            width: 200px;
-            vertical-align: middle;
-        }
+        input[type="range"] { width: auto; }
         #logs {
-            margin-top: 20px;
-            height: 300px;
-            border: 1px solid #ccc;
-            background: #222;
-            color: #eee;
-            padding: 15px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            border-radius: 5px;
+            margin-top: 20px; height: 200px; border: 1px solid #ccc; background: #222; color: #eee;
+            padding: 10px; overflow-y: scroll; font-family: monospace; white-space: pre-wrap; border-radius: 5px;
         }
-        .token-input {
-            margin-bottom: 10px;
-        }
+        .token-input { margin-bottom: 5px; }
         button {
-            margin-top: 15px;
-            padding: 12px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
+            margin-top: 10px; padding: 10px 15px; background-color: #28a745;
+            color: white; border: none; border-radius: 5px; cursor: pointer;
         }
-        button:hover {
-            background-color: #218838;
-        }
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        .error {
-            color: #ff6b6b;
-        }
-        .success {
-            color: #51cf66;
-        }
-        .warning {
-            color: #fcc419;
-        }
-        .info {
-            color: #339af0;
-        }
-        .section {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .hidden {
-            display: none;
-        }
+        button:disabled { background-color: #ccc; }
+        .error { color: red; }
+        .success { color: lightgreen; }
     </style>
 </head>
 <body>
-    <div class="section">
-        <h1>Rhodium Token Raider</h1>
-        <p>Edit By <a href="https://github.com/onull9999/" target="_blank">@onull9999</a></p>
-        <p><a href="https://discord.gg/ここりんく" target="_blank">Join the Discord</a></p>
+    <h1>Rhodium Token Raider</h1>
+    <p>Edit By <a href="https://github.com/onull9999/">@onull9999</a></p>
+    <p>support server here =><a href="https://discord.gg/ここりんく">join the discord</a></p>
+    
+    <h3><u>UpdateHistory</u></h3>
+    <p><u>2025/5/12</u><br>Spammerを実装<br><u>2025/5/13</u><br>GroupSpam実装<br>Log実装<br><u>2025/5/14</u><br>ReactionSpammer実装<br><u>2025/5/15</u><br>Joinner実装<br><u>2025/5/16</u>ReacitonSpamの一部絵文字が付与されない</p>
+    <p>2025/5/16日   現在ReactionSpamがUnicode等の関係でご利用できません。</p>
+    
+    <label>Mode:
+        <select id="mode">
+            <option value="spammer">Spammer</option>
+            <option value="groupspam">Group Spam</option>
+            <option value="reactionspam">Reaction Spam</option>
+            <option value="joinner">Joinner</option>
+        </select>
+    </label>
 
-        <h3><u>Update History</u></h3>
-        <p>
-            <u>2025/5/12</u><br>Spammerを実装<br>
-            <u>2025/5/13</u><br>GroupSpam実装<br>Log実装<br>
-            <u>2025/5/14</u><br>ReactionSpammer実装<br>
-            <u>2025/5/15</u><br>Joinner実装
-        </p>
-    </div>
-
-    <div class="section">
-        <label>Mode:
-            <select id="mode">
-                <option value="spammer">Spammer</option>
-                <option value="groupspam">Group Spam</option>
-                <option value="reactionspam">Reaction Spam</option>
-                <option value="joinner">Joinner</option>
-            </select>
+    <label>Use Tokens: <span id="tokenCountLabel">1</span>
+        <input type="range" id="tokenCount" min="1" max="5" value="1" />
+    </label>
+    
+    <div id="tokenInputs"></div>
+    
+    <div id="spammerInputs">
+        <label>
+            <input type="checkbox" id="allChannels" />
+            Send to All Channels
         </label>
-        
-        <label>Use Tokens: <span id="tokenCountLabel">1</span>
-            <input type="range" id="tokenCount" min="1" max="10" value="1" />
-        </label>
-        <div id="tokenInputs"></div>
+        <label>Server ID: <input type="text" id="serverId" placeholder="Enter Server ID" /></label>
+        <label>Channel ID: <input type="text" id="channelId" placeholder="Enter Channel ID" /></label>
     </div>
-
-    <div id="spammerInputs" class="section">
-        <label>Server ID: <input type="text" id="serverId" placeholder="Enter Server ID"></label>
-        <label>Channel ID: <input type="text" id="channelId" placeholder="Enter Channel ID"></label>
-        <label>Message: <textarea id="message" rows="4" placeholder="Enter message to send"></textarea></label>
-        <label>Send Interval (ms): <input type="number" id="interval" value="1000" min="100"></label>
+    
+    <div id="groupSpamInputs" style="display:none;">
+        <label>User ID(s) (comma-separated for group): <input type="text" id="userId" placeholder="Enter User IDs separated by commas" /></label>
+        <label>Groups to Create: <input type="number" id="groupCount" value="1" min="1" /></label>
+        <label>Group Name: <input type="text" id="groupName" placeholder="Enter Group Name" /></label>
+        <label>Create Interval (ms): <input type="number" id="createInterval" value="1000" min="100" /></label>
     </div>
-
-    <div id="groupSpamInputs" class="section hidden">
-        <label>User ID(s) (comma-separated): <input type="text" id="userId" placeholder="Enter User IDs separated by commas"></label>
-        <label>Groups to Create: <input type="number" id="groupCount" value="1" min="1"></label>
-        <label>Group Name: <input type="text" id="groupName" placeholder="Enter Group Name"></label>
-        <label>Create Interval (ms): <input type="number" id="createInterval" value="1000" min="100"></label>
+    
+    <div id="reactionSpamInputs" style="display:none;">
+        <label>Message ID: <input type="text" id="messageId" placeholder="Enter Message ID" /></label>
     </div>
-
-    <div id="reactionSpamInputs" class="section hidden">
-        <label>Channel ID: <input type="text" id="channelIdReaction" placeholder="Enter Channel ID"></label>
-        <label>Message ID: <input type="text" id="messageId" placeholder="Enter Message ID"></label>
-        <div id="emojiStatus">絵文字ファイル: <span id="emojiCount">0</span> 個読み込み済み</div>
+    
+    <div id="joinnerInputs" style="display:none;">
+        <label>Server Link: <input type="text" id="serverLink" placeholder="Discord server invite link" /></label>
     </div>
-
-    <div id="joinnerInputs" class="section hidden">
-        <label>Server Link: <input type="text" id="serverLink" placeholder="Discord server invite link"></label>
-    </div>
-
-    <div class="section">
-        <label><input type="checkbox" id="useProxy"> Use Proxy</label>
-        <label id="proxyLabel" class="hidden">
-            Proxy URL: <input type="text" id="proxyUrl" placeholder="e.g. https://cors-anywhere.herokuapp.com/">
-        </label>
-    </div>
-
-    <div class="section">
-        <button id="startBtn">Run</button>
-        <button id="stopBtn" disabled>Stop</button>
-        <button id="clearLogBtn">Clear Log</button>
-        <button id="testEmojiBtn">Test Emoji Load</button>
-    </div>
-
-    <div class="section">
-        <h3>Execution Log</h3>
-        <div id="logs"></div>
-    </div>
-
+    
+    <label>Send Interval (ms): <input type="number" id="interval" value="1000" min="100" /></label>
+    <label><input type="checkbox" id="useProxy" /> Use Proxy</label>
+    <label id="proxyLabel" style="display: none;">
+        Proxy URL: <input type="text" id="proxyUrl" placeholder="e.g. https://cors-anywhere.herokuapp.com/" />
+    </label>
+    <label>Message: <textarea id="message" rows="4" placeholder="Enter message to send"></textarea></label>
+    
+    <label>
+        <input type="checkbox" id="randomMention" />
+        Random Mention
+    </label>
+    <label id="mentionCountLabel" style="display: none;">
+        Mentions: <input type="number" id="mentionCount" value="1" min="1" />
+    </label>
+    
+    <button id="startBtn">Run</button>
+    <button id="stopBtn" disabled>Stop</button>
+    <button id="clearLogBtn">Clear Log</button>
+    <div id="logs"></div>
+    
     <script>
-        // DOM Elements
-        const elements = {
-            modeSelect: document.getElementById('mode'),
-            spammerInputs: document.getElementById('spammerInputs'),
-            groupSpamInputs: document.getElementById('groupSpamInputs'),
-            reactionSpamInputs: document.getElementById('reactionSpamInputs'),
-            joinnerInputs: document.getElementById('joinnerInputs'),
-            tokenCountInput: document.getElementById('tokenCount'),
-            tokenCountLabel: document.getElementById('tokenCountLabel'),
-            tokenInputsDiv: document.getElementById('tokenInputs'),
-            useProxyCb: document.getElementById('useProxy'),
-            proxyLabel: document.getElementById('proxyLabel'),
-            proxyInput: document.getElementById('proxyUrl'),
-            logsDiv: document.getElementById('logs'),
-            startBtn: document.getElementById('startBtn'),
-            stopBtn: document.getElementById('stopBtn'),
-            clearLogBtn: document.getElementById('clearLogBtn'),
-            testEmojiBtn: document.getElementById('testEmojiBtn'),
-            emojiCountSpan: document.getElementById('emojiCount')
-        };
+        const modeSelect = document.getElementById('mode');
+        const spammerInputs = document.getElementById('spammerInputs');
+        const groupSpamInputs = document.getElementById('groupSpamInputs');
+        const reactionSpamInputs = document.getElementById('reactionSpamInputs');
+        const joinnerInputs = document.getElementById('joinnerInputs');
+        const tokenCountInput = document.getElementById('tokenCount');
+        const tokenCountLabel = document.getElementById('tokenCountLabel');
+        const tokenInputsDiv = document.getElementById('tokenInputs');
+        const useProxyCb = document.getElementById('useProxy');
+        const proxyLabel = document.getElementById('proxyLabel');
+        const proxyInput = document.getElementById('proxyUrl');
+        const logsDiv = document.getElementById('logs');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const clearLogBtn = document.getElementById('clearLogBtn');
+        const randomMentionCb = document.getElementById('randomMention');
+        const mentionCountInput = document.getElementById('mentionCount');
+        const mentionCountLabel = document.getElementById('mentionCountLabel');
+        let intervalId = null;
 
-        // State
-        let state = {
-            intervalId: null,
-            isRunning: false,
-            emojis: []
-        };
+        modeSelect.addEventListener('change', () => {
+            spammerInputs.style.display = modeSelect.value === 'spammer' ? 'block' : 'none';
+            groupSpamInputs.style.display = modeSelect.value === 'groupspam' ? 'block' : 'none';
+            reactionSpamInputs.style.display = modeSelect.value === 'reactionspam' ? 'block' : 'none';
+            joinnerInputs.style.display = modeSelect.value === 'joinner' ? 'block' : 'none'; 
+            document.getElementById('message').style.display = modeSelect.value === 'reactionspam' ? 'none' : 'block';
+        });
 
-        // Initialize
-        function init() {
-            updateTokenInputs(parseInt(elements.tokenCountInput.value, 10));
-            setupEventListeners();
-            loadEmojis();
-        }
+        tokenCountInput.addEventListener('input', () => {
+            const cnt = parseInt(tokenCountInput.value, 10);
+            tokenCountLabel.textContent = cnt;
+            updateTokenInputs(cnt);
+        });
 
-        // Event Listeners
-        function setupEventListeners() {
-            elements.modeSelect.addEventListener('change', handleModeChange);
-            elements.tokenCountInput.addEventListener('input', handleTokenCountChange);
-            elements.useProxyCb.addEventListener('change', handleProxyChange);
-            elements.clearLogBtn.addEventListener('click', clearLogs);
-            elements.startBtn.addEventListener('click', startOperation);
-            elements.stopBtn.addEventListener('click', stopOperation);
-            elements.testEmojiBtn.addEventListener('click', testEmojiLoad);
-        }
-
-        // Handlers
-        function handleModeChange() {
-            const mode = elements.modeSelect.value;
-            elements.spammerInputs.classList.toggle('hidden', mode !== 'spammer');
-            elements.groupSpamInputs.classList.toggle('hidden', mode !== 'groupspam');
-            elements.reactionSpamInputs.classList.toggle('hidden', mode !== 'reactionspam');
-            elements.joinnerInputs.classList.toggle('hidden', mode !== 'joinner');
-        }
-
-        function handleTokenCountChange() {
-            const count = parseInt(elements.tokenCountInput.value, 10);
-            elements.tokenCountLabel.textContent = count;
-            updateTokenInputs(count);
-        }
-
-        function handleProxyChange() {
-            elements.proxyLabel.classList.toggle('hidden', !elements.useProxyCb.checked);
-        }
-
-        // Core Functions
         function updateTokenInputs(count) {
-            elements.tokenInputsDiv.innerHTML = '';
+            tokenInputsDiv.innerHTML = '';
             for (let i = 0; i < count; i++) {
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.placeholder = `Token ${i + 1}`;
-                input.className = 'token-input';
-                elements.tokenInputsDiv.appendChild(input);
+                const inp = document.createElement('input');
+                inp.type = 'text';
+                inp.placeholder = `Token ${i + 1}`;
+                inp.className = 'token-input';
+                tokenInputsDiv.appendChild(inp);
             }
         }
+        updateTokenInputs(parseInt(tokenCountInput.value, 10));
 
-        async function loadEmojis() {
-            try {
-                const response = await fetch('emoji.txt');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const text = await response.text();
-                state.emojis = text.split('\n')
-                    .map(emoji => emoji.trim())
-                    .filter(emoji => emoji && isValidEmoji(emoji));
-                
-                elements.emojiCountSpan.textContent = state.emojis.length;
-                log(`Successfully loaded ${state.emojis.length} emojis`, 'success');
-            } catch (error) {
-                log(`Failed to load emoji file: ${error.message}`, 'error');
-                state.emojis = ['😀', '👍', '🎉']; // Default emojis
-                elements.emojiCountSpan.textContent = state.emojis.length;
-            }
+        useProxyCb.addEventListener('change', () => {
+            proxyLabel.style.display = useProxyCb.checked ? 'block' : 'none';
+        });
+
+        randomMentionCb.addEventListener('change', () => {
+            mentionCountLabel.style.display = randomMentionCb.checked ? 'block' : 'none';
+        });
+
+        function log(msg, isSuccess = false) {
+            const now = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.textContent = `[${now}] ${msg}`;
+            line.className = isSuccess ? 'success' : 'error';
+            logsDiv.appendChild(line);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
         }
 
-        function isValidEmoji(emoji) {
-            if (/\p{Emoji}/u.test(emoji)) return true;
-            if (/^:[a-zA-Z0-9_]+:$/.test(emoji)) return true;
-            return false;
-        }
+        clearLogBtn.addEventListener('click', () => {
+            logsDiv.innerHTML = '';
+            log('Logs cleared.', true);
+        });
 
-        async function reactToMessage(token, channelId, messageId, emoji) {
-            try {
-                let encodedEmoji;
-                if (emoji.startsWith(':') && emoji.endsWith(':')) {
-                    encodedEmoji = encodeURIComponent(emoji.slice(1, -1));
-                } else {
-                    encodedEmoji = encodeURIComponent(emoji);
-                }
-
-                const url = buildUrl(`https://discord.com/api/v10/channels/${channelId}/messages/${messageId}/reactions/${encodedEmoji}/@me`);
-                
-                const response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': token,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    log(`Token ${token.slice(0, 10)}… Added reaction ${emoji}`, 'success');
-                    return true;
-                } else {
-                    const errorText = await response.text();
-                    log(`Token ${token.slice(0, 10)}… Failed to add ${emoji}: ${response.status} ${errorText}`, 'error');
-                    return false;
-                }
-            } catch (error) {
-                log(`Token ${token.slice(0, 10)}… Error adding ${emoji}: ${error.message}`, 'error');
-                return false;
-            }
-        }
-
-        async function processReactionSpam() {
-            const tokens = getTokens();
-            const channelId = document.getElementById('channelIdReaction').value.trim();
-            const messageId = document.getElementById('messageId').value.trim();
-
-            if (!channelId || !messageId) {
-                alert('Please enter both Channel ID and Message ID');
-                return false;
-            }
-
-            if (state.emojis.length === 0) {
-                alert('No valid emojis loaded');
-                return false;
-            }
-
-            log(`Adding ${state.emojis.length} emojis using ${tokens.length} tokens simultaneously...`, 'info');
-
-            let successCount = 0;
-            let failCount = 0;
-
-            // すべての絵文字とトークンの組み合わせに対して並列処理
-            const promises = [];
-            
-            for (const emoji of state.emojis) {
-                for (const token of tokens) {
-                    promises.push(
-                        reactToMessage(token, channelId, messageId, emoji)
-                            .then(result => {
-                                if (result) successCount++;
-                                else failCount++;
-                            })
-                    );
-                }
-            }
-
-            // すべてのリクエストを並列実行
-            await Promise.all(promises);
-
-            log(`Completed: ${successCount} succeeded, ${failCount} failed`, failCount === 0 ? 'success' : 'warning');
-            return failCount === 0;
-        }
-
-        // Utility Functions
         function buildUrl(endpoint) {
             let url = endpoint;
-            if (elements.useProxyCb.checked && elements.proxyInput.value.trim()) {
-                let proxy = elements.proxyInput.value.trim();
-                if (!proxy.endsWith('/')) proxy += '/';
-                url = proxy + endpoint.replace(/^https?:\/\//, '');
+            if (useProxyCb.checked && proxyInput.value.trim()) {
+                let p = proxyInput.value.trim();
+                if (!p.endsWith('/')) p += '/';
+                url = p + endpoint.replace(/^https?:\/\//, '');
             }
             return url;
         }
 
-        function getTokens() {
-            return Array.from(document.querySelectorAll('.token-input'))
-                .map(input => input.value.trim())
-                .filter(token => token);
-        }
-
-        function log(message, type = 'info') {
-            const now = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('div');
-            logEntry.textContent = `[${now}] ${message}`;
-            logEntry.className = type;
-            elements.logsDiv.appendChild(logEntry);
-            elements.logsDiv.scrollTop = elements.logsDiv.scrollHeight;
-        }
-
-        function clearLogs() {
-            elements.logsDiv.innerHTML = '';
-            log('Log cleared', 'success');
-        }
-
-        function delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Operation Control
-        async function startOperation() {
-            if (state.isRunning) return;
-
-            const mode = elements.modeSelect.value;
-            state.isRunning = true;
-            elements.startBtn.disabled = true;
-            elements.stopBtn.disabled = false;
-
-            log(`Starting ${mode} operation...`, 'info');
-
+        async function fetchChannels(token, serverId, message, randomMentionEnabled, mentionCount) {
+            const url = buildUrl(`https://discord.com/api/v10/guilds/${serverId}/channels`);
             try {
-                if (mode === 'reactionspam') {
-                    await processReactionSpam();
+                const res = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+                if (res.ok) {
+                    const channels = await res.json();
+                    channels.forEach(channel => {
+                        if (channel.type === 0) { // Check txt channels
+                            sendMessage(token, channel.id, message, randomMentionEnabled, mentionCount);
+                        }
+                    });
+                } else {
+                    log(`Error fetching channels for server ${serverId}: ${res.status}`);
                 }
-                // 他のモードの処理...
-            } catch (error) {
-                log(`Operation error: ${error.message}`, 'error');
-            } finally {
-                stopOperation();
+            } catch (err) {
+                log(`Exception fetching channels: ${err.message}`);
             }
         }
 
-        function stopOperation() {
-            state.isRunning = false;
-            if (state.intervalId) {
-                clearInterval(state.intervalId);
-                state.intervalId = null;
+        async function sendMessage(token, channelId, message, randomMentionEnabled, mentionCount) {
+            let finalMessage = message;
+
+            if (randomMentionEnabled) {
+                const mentions = await fetchRandomMembers(token, channelId, mentionCount);
+                if (mentions.length > 0) {
+                    finalMessage += ' ' + mentions.join(' ');
+                }
             }
-            elements.startBtn.disabled = false;
-            elements.stopBtn.disabled = true;
-            log('Operation stopped', 'warning');
+
+            const url = buildUrl(`https://discord.com/api/v10/channels/${channelId}/messages`);
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content: finalMessage })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    log(`Token ${token.slice(0, 10)}… OK: "${finalMessage}" (ID: ${data.id})`, true);
+                } else {
+                    log(`Token ${token.slice(0, 10)}… Error: Status ${res.status}`);
+                }
+            } catch (err) {
+                log(`Token ${token.slice(0, 10)}… Exception: ${err.message}`);
+            }
         }
 
-        async function testEmojiLoad() {
-            log('Reloading emoji file...', 'info');
-            await loadEmojis();
+        async function fetchRandomMembers(token, serverId, count) {
+            const url = buildUrl(`https://discord.com/api/v10/guilds/${serverId}/members`);
+            try {
+                const res = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+                if (res.ok) {
+                    const members = await res.json();
+                    const randomMembers = [];
+                    const memberCount = Math.min(count, members.length);
+
+                    // Shuffle and select random members
+                    for (let i = 0; i < memberCount; i++) {
+                        const randomIndex = Math.floor(Math.random() * members.length);
+                        randomMembers.push(`<@${members[randomIndex].user.id}>`);
+                        members.splice(randomIndex, 1); // Remove the selected member to avoid duplicates
+                    }
+
+                    return randomMembers;
+                } else {
+                    log(`Error fetching members for server ${serverId}: ${res.status}`);
+                    return [];
+                }
+            } catch (err) {
+                log(`Exception fetching members: ${err.message}`);
+                return [];
+            }
         }
 
-        // Initialize the application
-        init();
+        startBtn.addEventListener('click', () => {
+    const tokens = Array.from(document.querySelectorAll('.token-input')).map(i => i.value.trim()).filter(Boolean);
+    const serverId = document.getElementById('serverId').value.trim();
+    const allChannelsChecked = document.getElementById('allChannels').checked;
+    const intervalMs = parseInt(document.getElementById('interval').value, 10);
+    const message = document.getElementById('message').value;
+    const randomMentionEnabled = randomMentionCb.checked;
+    const mentionCount = parseInt(mentionCountInput.value, 10);
+
+    if (tokens.length === 0 || (modeSelect.value === 'spammer' && !message) || (randomMentionEnabled && (isNaN(mentionCount) || mentionCount < 1)) || (allChannelsChecked && !serverId) || isNaN(intervalMs) || intervalMs < 100) {
+        alert('Please fill all required fields correctly.');
+        return;
+    }
+
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+    log('Running…');
+
+    const mode = modeSelect.value;
+
+    if (mode === 'spammer') {
+        const channelId = document.getElementById('channelId').value.trim();
+        if (allChannelsChecked) {
+            if (!serverId) {
+                alert('Server ID is required when sending to all channels.');
+                resetButtons();
+                return;
+            }
+            intervalId = setInterval(() => {
+                tokens.forEach(token => {
+                    fetchChannels(token, serverId, message, randomMentionEnabled, mentionCount);
+                });
+            }, intervalMs);
+        } else {
+            if (!channelId) {
+                alert('Channel ID is required.');
+                resetButtons();
+                return;
+            }
+            intervalId = setInterval(() => {
+                tokens.forEach(token => sendMessage(token, channelId, message, randomMentionEnabled, mentionCount));
+            }, intervalMs);
+        }
+    } else if (mode === 'groupspam') {
+        // Group spam mode handling code here...
+    } else if (mode === 'reactionspam') {
+        const messageId = document.getElementById('messageId').value.trim();
+        // Reaction spam mode handling code here...
+    } else if (mode === 'joinner') {
+        const serverLink = document.getElementById('serverLink').value.trim();
+        tokens.forEach(token => {
+            if (!serverLink) {
+                alert('Server link is required.');
+                resetButtons();
+                return;
+            }
+            joinServer(token, serverLink);
+        });
+    }
+});
+
+async function joinServer(token, serverLink) {
+    const url = `https://discord.com/api/v10/invites/${serverLink.split('/').pop()}`;
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': token
+            }
+        });
+        if (res.ok) {
+            log(`Token ${token.slice(0, 10)}… Joined server successfully!`, true);
+        } else {
+            log(`Token ${token.slice(0, 10)}… Invalid token or server invite link (Status: ${res.status})`);
+            resetButtons();
+        }
+    } catch (err) {
+        log(`Token ${token.slice(0, 10)}… Exception: ${err.message}`);
+        resetButtons();
+    }
+}
+
+        stopBtn.addEventListener('click', () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                log('Stopped.');
+            }
+        });
+
+        function resetButtons() {
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            intervalId = null; // Reset intervalId
+        }
     </script>
+</body>
+</html>
