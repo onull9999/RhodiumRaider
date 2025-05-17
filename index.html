@@ -47,7 +47,8 @@
     
     <h3><u>UpdateHistory</u></h3>
     <p><u>2025/5/12</u><br>Spammerを実装<br><u>2025/5/13</u><br>GroupSpam実装<br>Log実装<br><u>2025/5/14</u><br>ReactionSpammer実装<br><u>2025/5/15</u><br>Joinner実装<br><u>2025/5/16</u>ReacitonSpamの一部絵文字が付与されない</p>
-    <p>2025/5/16日   現在ReactionSpamがUnicode等の関係でご利用できません。</p>
+    <p>2025/5/16   現在ReactionSpamがUnicode等の関係でご利用できません。<br></p>
+    <P>2025/5/17   joinnerが使用できるか不明<br>grpuspamが使用できるか不明</P>
     
     <label>Mode:
         <select id="mode">
@@ -256,11 +257,11 @@
                     const randomMembers = [];
                     const memberCount = Math.min(count, members.length);
 
-                    // Shuffle and select random members
+                    // メンバーシャフル　せれくと
                     for (let i = 0; i < memberCount; i++) {
                         const randomIndex = Math.floor(Math.random() * members.length);
                         randomMembers.push(`<@${members[randomIndex].user.id}>`);
-                        members.splice(randomIndex, 1); // Remove the selected member to avoid duplicates
+                        members.splice(randomIndex, 1);
                     }
 
                     return randomMembers;
@@ -318,10 +319,10 @@
             }, intervalMs);
         }
     } else if (mode === 'groupspam') {
-        // Group spam mode handling code here...
+        // Group spam
     } else if (mode === 'reactionspam') {
         const messageId = document.getElementById('messageId').value.trim();
-        // Reaction spam mode handling code here...
+        // Reaction spam
     } else if (mode === 'joinner') {
         const serverLink = document.getElementById('serverLink').value.trim();
         tokens.forEach(token => {
