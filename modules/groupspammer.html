@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rhodium Token Raider - Group Spam</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #444;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
+        }
+        button {
+            margin-top: 10px; padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;
+        }
+        button:disabled { background-color: #ccc; }
+        .error { color: red; }
+        .success { color: lightgreen; }
+        #logs {
+            margin-top: 20px; height: 200px; border: 1px solid #ccc; background: #222; color: #eee;
+            padding: 10px; overflow-y: scroll; font-family: monospace; white-space: pre-wrap; border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rhodium Token Raider - Group Spam</h1>
+    <label>Use Tokens: <span id="tokenCountLabel">1</span>
+        <input type="range" id="tokenCount" min="1" max="5" value="1" />
+    </label>
+    <div id="tokenInputs"></div>
+    <div id="groupSpamInputs">
+        <label>User ID(s) (comma-separated for group): <input type="text" id="userId" placeholder="Enter User IDs separated by commas" /></label>
+        <label>Groups to Create: <input type="number" id="groupCount" value="1" min="1" /></label>
+        <label>Group Name: <input type="text" id="groupName" placeholder="Enter Group Name" /></label>
+        <label>Create Interval (ms): <input type="number" id="createInterval" value="1000" min="100" /></label>
+    </div>
+    <label>Send Interval (ms): <input type="number" id="interval" value="1000" min="100" /></label>
+    <label>Message: <textarea id="message" rows="4" placeholder="Enter message to send"></textarea></label>
+    <button id="startBtn">Run</button>
+    <button id="stopBtn" disabled>Stop</button>
+    <button id="clearLogBtn">Clear Log</button>
+    <div id="logs"></div>
+
+    <script>
+        const tokenCountInput = document.getElementById('tokenCount');
+        const tokenCountLabel = document.getElementById('tokenCountLabel');
+        const tokenInputsDiv = document.getElementById('tokenInputs');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const clearLogBtn = document.getElementById('clearLogBtn');
+        const logsDiv = document.getElementById('logs');
+        let intervalId = null;
+
+        tokenCountInput.addEventListener('input', () => {
+            const cnt = parseInt(tokenCountInput.value, 10);
+            tokenCountLabel.textContent = cnt;
+            updateTokenInputs(cnt);
+        });
+
+        function updateTokenInputs(count) {
+            tokenInputsDiv.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const inp = document.createElement('input');
+                inp.type = 'text';
+                inp.placeholder = `Token ${i + 1}`;
+                inp.className = 'token-input';
+                tokenInputsDiv.appendChild(inp);
+            }
+        }
+
+        function log(msg, isSuccess = false) {
+            const now = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.textContent = `[${now}] ${msg}`;
+            line.className = isSuccess ? 'success' : 'error';
+            logsDiv.appendChild(line);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        clearLogBtn.addEventListener('click', () => {
+            logsDiv.innerHTML = '';
+            log('Logs cleared.', true);
+        });
+
+        async function createGroupAndMessage(token, userIds, groupName, message) {
+            const url = `https://discord.com/api/v10/users/@me/channels`;
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ recipients: userIds })
+                });
+                if (res.ok) {
+                    const channelData = await res.json();
+                    const messageUrl = `https://discord.com/api/v10/channels/${channelData.id}/messages`;
+                    await fetch(messageUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': token,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ content: message })
+                    });
+                    log(`Group created and message sent to group ${channelData.id}`, true);
+                } else {
+                    log(`Error creating group: ${res.status}`);
+                }
+            } catch (err) {
+                log(`Exception creating group: ${err.message}`);
+            }
+        }
+
+        startBtn.addEventListener('click', () => {
+            const tokens = Array.from(document.querySelectorAll('.token-input')).map(i => i.value.trim()).filter(Boolean);
+            const rawUserIds = document.getElementById('userId').value.trim();
+            const userIds = rawUserIds.split(',').map(id => id.trim()).filter(id => id);
+            const groupCount = parseInt(document.getElementById('groupCount').value, 10);
+            const groupName = document.getElementById('groupName').value.trim();
+            const createInterval = parseInt(document.getElementById('createInterval').value, 10);
+            const message = document.getElementById('message').value;
+
+            if (tokens.length === 0 || userIds.length < 1 || !groupName || isNaN(groupCount) || groupCount < 1) {
+                alert('Please fill all required fields correctly.');
+                return;
+            }
+
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            log('Running…');
+
+            let count = 0;
+            intervalId = setInterval(() => {
+                if (count >= groupCount) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    log('Group Spam complete.');
+                    return;
+                }
+                tokens.forEach(token => {
+                    createGroupAndMessage(token, userIds, groupName, message);
+                });
+                count++;
+            }, createInterval);
+        });
+
+        stopBtn.addEventListener('click', () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                log('Stopped.');
+            }
+        });
+
+        updateTokenInputs(parseInt(tokenCountInput.value, 10));
+    </script>
+</body>
+</html>

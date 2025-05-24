@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rhodium Token Raider</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #444;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
+        }
+        #logs {
+            margin-top: 20px; height: 200px; border: 1px solid #ccc; background: #222; color: #eee;
+            padding: 10px; overflow-y: scroll; font-family: monospace; white-space: pre-wrap; border-radius: 5px;
+        }
+        button {
+            margin-top: 10px; padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+        }
+        .error { color: red; }
+        .success { color: lightgreen; }
+    </style>
+</head>
+<body>
+    <h1>Rhodium Token Raider</h1>
+    <p>Edit By <a href="https://github.com/onull9999/">@onull9999</a></p>
+    <p>Support server here => <a href="https://discord.gg/ここりんく">Join the Discord</a></p>
+
+    <label>Use Tokens: <span id="tokenCountLabel">1</span>
+        <input type="range" id="tokenCount" min="1" max="5" value="1" />
+    </label>
+
+    <div id="tokenInputs"></div>
+
+    <div id="spammerInputs">
+        <label>
+            <input type="checkbox" id="allChannels" />
+            Send to All Channels
+        </label>
+        <label>Server ID: <input type="text" id="serverId" placeholder="Enter Server ID" /></label>
+        <label>Channel ID: <input type="text" id="channelId" placeholder="Enter Channel ID" /></label>
+    </div>
+
+    <label>Message: <textarea id="message" rows="4" placeholder="Enter message to send"></textarea></label>
+    <label>Send Interval (ms): <input type="number" id="interval" value="1000" min="100" /></label>
+    <label><input type="checkbox" id="randomMention" /> Random Mention</label>
+    <label id="mentionCountLabel" style="display: none;">Mentions: <input type="number" id="mentionCount" value="1" min="1" /></label>
+    
+    <button id="startBtn">Run</button>
+    <button id="stopBtn" disabled>Stop</button>
+    <button id="clearLogBtn">Clear Log</button>
+    <div id="logs"></div>
+
+    <script>
+        const tokenCountInput = document.getElementById('tokenCount');
+        const tokenCountLabel = document.getElementById('tokenCountLabel');
+        const tokenInputsDiv = document.getElementById('tokenInputs');
+        const useProxyCb = document.getElementById('useProxy');
+        const logsDiv = document.getElementById('logs');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const clearLogBtn = document.getElementById('clearLogBtn');
+        const randomMentionCb = document.getElementById('randomMention');
+        const mentionCountInput = document.getElementById('mentionCount');
+        const mentionCountLabel = document.getElementById('mentionCountLabel');
+        let intervalId = null;
+
+        tokenCountInput.addEventListener('input', () => {
+            const cnt = parseInt(tokenCountInput.value, 10);
+            tokenCountLabel.textContent = cnt;
+            updateTokenInputs(cnt);
+        });
+
+        function updateTokenInputs(count) {
+            tokenInputsDiv.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const inp = document.createElement('input');
+                inp.type = 'text';
+                inp.placeholder = `Token ${i + 1}`;
+                tokenInputsDiv.appendChild(inp);
+            }
+        }
+
+        function log(msg, isSuccess = false) {
+            const now = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.textContent = `[${now}] ${msg}`;
+            line.className = isSuccess ? 'success' : 'error';
+            logsDiv.appendChild(line);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        clearLogBtn.addEventListener('click', () => {
+            logsDiv.innerHTML = '';
+            log('Logs cleared.', true);
+        });
+
+        startBtn.addEventListener('click', () => {
+            const tokens = Array.from(document.querySelectorAll('.token-input')).map(i => i.value.trim()).filter(Boolean);
+            const serverId = document.getElementById('serverId').value.trim();
+            const channelId = document.getElementById('channelId').value.trim();
+            const intervalMs = parseInt(document.getElementById('interval').value, 10);
+            const message = document.getElementById('message').value;
+            const randomMentionEnabled = randomMentionCb.checked;
+            const mentionCount = parseInt(mentionCountInput.value, 10);
+
+            if (tokens.length === 0 || !message || (randomMentionEnabled && (isNaN(mentionCount) || mentionCount < 1)) || (document.getElementById('allChannels').checked && !serverId) || isNaN(intervalMs) || intervalMs < 100) {
+                alert('Please fill all required fields correctly.');
+                return;
+            }
+
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            log('Running…');
+
+            const allChannelsChecked = document.getElementById('allChannels').checked;
+
+            if (allChannelsChecked) {
+                if (!serverId) {
+                    alert('Server ID is required when sending to all channels.');
+                    resetButtons();
+                    return;
+                }
+                intervalId = setInterval(() => {
+                    tokens.forEach(token => {
+                        fetchChannels(token, serverId, message, randomMentionEnabled, mentionCount);
+                    });
+                }, intervalMs);
+            } else {
+                if (!channelId) {
+                    alert('Channel ID is required.');
+                    resetButtons();
+                    return;
+                }
+                intervalId = setInterval(() => {
+                    tokens.forEach(token => sendMessage(token, channelId, message, randomMentionEnabled, mentionCount));
+                }, intervalMs);
+            }
+        });
+
+        function resetButtons() {
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            intervalId = null; // Reset intervalId
+        }
+
+        // Add fetchChannels and sendMessage functions here
+    </script>
+</body>
+</html>
