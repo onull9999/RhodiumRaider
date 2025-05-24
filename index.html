@@ -1,377 +1,147 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-<!--▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧-->
-<!-- edit by onull9999 2025/5/12 -->
-<!--▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧▧--> 
-
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Rhodium Token Raider</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhodum Raider</title>
     <style>
         body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh; 
+            margin: 0;
+            background: linear-gradient(135deg, #74ebd5, #acb6e5);
             font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-            color: #333;
+            padding-top: 40px;
         }
+
         h1 {
+            margin-bottom: 10px;
+            font-size: 36px;
+            color: #333;
+            animation: fadeIn 1s ease;
+        }
+
+        h2 {
+            margin-bottom: 5px;
+            font-size: 24px;
+            color: #555;
+            animation: slideIn 1s ease;
+        }
+
+        .edit-text {
+            font-size: 16px;
+            color: #777;
+            animation: fadeIn 1.5s ease;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+            width: 80%;
+            padding: 20px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 15px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            flex: 1;
+            margin: 0 10px;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        .info-box-container {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80%;
+            padding-bottom: 40px;
+        }
+
+        .info-box {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 2px solid #333;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: riseUp 0.5s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes riseUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feature {
+            margin-bottom: 15px;
+            font-size: 18px;
             color: #444;
         }
-        label {
-            display: block;
-            margin-top: 15px;
-        }
-        input[type="text"], input[type="number"], textarea {
-            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
-        }
-        input[type="range"] { width: auto; }
-        #logs {
-            margin-top: 20px; height: 200px; border: 1px solid #ccc; background: #222; color: #eee;
-            padding: 10px; overflow-y: scroll; font-family: monospace; white-space: pre-wrap; border-radius: 5px;
-        }
-        .token-input { margin-bottom: 5px; }
-        button {
-            margin-top: 10px; padding: 10px 15px; background-color: #28a745;
-            color: white; border: none; border-radius: 5px; cursor: pointer;
-        }
-        button:disabled { background-color: #ccc; }
-        .error { color: red; }
-        .success { color: lightgreen; }
     </style>
 </head>
 <body>
-    <h1>Rhodium Token Raider</h1>
-    <p>Edit By <a href="https://github.com/onull9999/">@onull9999</a></p>
-    <p>support server here =><a href="https://discord.gg/ここりんく">join the discord</a></p>
-    
-    <h3><u>UpdateHistory</u></h3>
-    <p><u>2025/5/12</u><br>Spammerを実装<br><u>2025/5/13</u><br>GroupSpam実装<br>Log実装<br><u>2025/5/14</u><br>ReactionSpammer実装<br><u>2025/5/15</u><br>Joinner実装<br><u>2025/5/16</u>ReacitonSpamの一部絵文字が付与されない</p>
-    <p>2025/5/16   現在ReactionSpamがUnicode等の関係でご利用できません。<br></p>
-    <P>2025/5/17   joinnerが使用できるか不明<br>grpuspamが使用できるか不明</P>
-    
-    <label>Mode:
-        <select id="mode">
-            <option value="spammer">Spammer</option>
-            <option value="groupspam">Group Spam</option>
-            <option value="reactionspam">Reaction Spam</option>
-            <option value="joinner">Joinner</option>
-        </select>
-    </label>
-
-    <label>Use Tokens: <span id="tokenCountLabel">1</span>
-        <input type="range" id="tokenCount" min="1" max="5" value="1" />
-    </label>
-    
-    <div id="tokenInputs"></div>
-    
-    <div id="spammerInputs">
-        <label>
-            <input type="checkbox" id="allChannels" />
-            Send to All Channels
-        </label>
-        <label>Server ID: <input type="text" id="serverId" placeholder="Enter Server ID" /></label>
-        <label>Channel ID: <input type="text" id="channelId" placeholder="Enter Channel ID" /></label>
+    <h1>Rhodum</h1>
+    <h2>DiscordTokenRaider</h2>
+    <div class="edit-text">Edit by onull9999</div>
+    <div class="button-container">
+        <a href="modules/spammer.html" class="button">Spammer</a>
+        <a href="modules/groupspammer.html" class="button">GroupSpammer</a>
+        <a href="modules/reactionspam.html" class="button">ReactionSpam</a>
+        <a href="modules/joinner.html" class="button">Joinner</a>
     </div>
     
-    <div id="groupSpamInputs" style="display:none;">
-        <label>User ID(s) (comma-separated for group): <input type="text" id="userId" placeholder="Enter User IDs separated by commas" /></label>
-        <label>Groups to Create: <input type="number" id="groupCount" value="1" min="1" /></label>
-        <label>Group Name: <input type="text" id="groupName" placeholder="Enter Group Name" /></label>
-        <label>Create Interval (ms): <input type="number" id="createInterval" value="1000" min="100" /></label>
+    <div class="info-box-container">
+        <h2>RhodiumRaiderの良さ</h2>
+        <div class="info-box">
+            <div class="feature">
+                <strong>「見やすく、直感的に使えるUI」</strong><br>
+                コマンドラインと違い、HTML等を使用していることにより、見やすく直感的に使えるUIが特徴です。これにより、初めてのユーザーでも簡単に操作でき、目的の機能へスムーズにアクセスできます。
+            </div>
+        </div>
+        <div class="info-box">
+            <div class="feature">
+                <strong>「安定した機能性」</strong><br>
+                SpammerやGroupSpammerなど、さまざまな機能を安定して提供しています。これにより、必要なタスクを迅速に実行できるため、効率的な作業が可能です。
+            </div>
+        </div>
+        <div class="info-box">
+            <div class="feature">
+                <strong>「容易なアクセス」</strong><br>
+                ダウンロードや追加の拡張子などは不要です。サイトにアクセスするだけで、気軽に使うことができます。これにより、ユーザーはすぐに必要な機能を利用でき、手間を省くことができます。
+            </div>
+        </div>
     </div>
-    
-    <div id="reactionSpamInputs" style="display:none;">
-        <label>Message ID: <input type="text" id="messageId" placeholder="Enter Message ID" /></label>
-    </div>
-    
-    <div id="joinnerInputs" style="display:none;">
-        <label>Server Link: <input type="text" id="serverLink" placeholder="Discord server invite link" /></label>
-    </div>
-    
-    <label>Send Interval (ms): <input type="number" id="interval" value="1000" min="100" /></label>
-    <label><input type="checkbox" id="useProxy" /> Use Proxy</label>
-    <label id="proxyLabel" style="display: none;">
-        Proxy URL: <input type="text" id="proxyUrl" placeholder="e.g. https://cors-anywhere.herokuapp.com/" />
-    </label>
-    <label>Message: <textarea id="message" rows="4" placeholder="Enter message to send"></textarea></label>
-    
-    <label>
-        <input type="checkbox" id="randomMention" />
-        Random Mention
-    </label>
-    <label id="mentionCountLabel" style="display: none;">
-        Mentions: <input type="number" id="mentionCount" value="1" min="1" />
-    </label>
-    
-    <button id="startBtn">Run</button>
-    <button id="stopBtn" disabled>Stop</button>
-    <button id="clearLogBtn">Clear Log</button>
-    <div id="logs"></div>
-    
-    <script>
-        const modeSelect = document.getElementById('mode');
-        const spammerInputs = document.getElementById('spammerInputs');
-        const groupSpamInputs = document.getElementById('groupSpamInputs');
-        const reactionSpamInputs = document.getElementById('reactionSpamInputs');
-        const joinnerInputs = document.getElementById('joinnerInputs');
-        const tokenCountInput = document.getElementById('tokenCount');
-        const tokenCountLabel = document.getElementById('tokenCountLabel');
-        const tokenInputsDiv = document.getElementById('tokenInputs');
-        const useProxyCb = document.getElementById('useProxy');
-        const proxyLabel = document.getElementById('proxyLabel');
-        const proxyInput = document.getElementById('proxyUrl');
-        const logsDiv = document.getElementById('logs');
-        const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const clearLogBtn = document.getElementById('clearLogBtn');
-        const randomMentionCb = document.getElementById('randomMention');
-        const mentionCountInput = document.getElementById('mentionCount');
-        const mentionCountLabel = document.getElementById('mentionCountLabel');
-        let intervalId = null;
-
-        modeSelect.addEventListener('change', () => {
-            spammerInputs.style.display = modeSelect.value === 'spammer' ? 'block' : 'none';
-            groupSpamInputs.style.display = modeSelect.value === 'groupspam' ? 'block' : 'none';
-            reactionSpamInputs.style.display = modeSelect.value === 'reactionspam' ? 'block' : 'none';
-            joinnerInputs.style.display = modeSelect.value === 'joinner' ? 'block' : 'none'; 
-            document.getElementById('message').style.display = modeSelect.value === 'reactionspam' ? 'none' : 'block';
-        });
-
-        tokenCountInput.addEventListener('input', () => {
-            const cnt = parseInt(tokenCountInput.value, 10);
-            tokenCountLabel.textContent = cnt;
-            updateTokenInputs(cnt);
-        });
-
-        function updateTokenInputs(count) {
-            tokenInputsDiv.innerHTML = '';
-            for (let i = 0; i < count; i++) {
-                const inp = document.createElement('input');
-                inp.type = 'text';
-                inp.placeholder = `Token ${i + 1}`;
-                inp.className = 'token-input';
-                tokenInputsDiv.appendChild(inp);
-            }
-        }
-        updateTokenInputs(parseInt(tokenCountInput.value, 10));
-
-        useProxyCb.addEventListener('change', () => {
-            proxyLabel.style.display = useProxyCb.checked ? 'block' : 'none';
-        });
-
-        randomMentionCb.addEventListener('change', () => {
-            mentionCountLabel.style.display = randomMentionCb.checked ? 'block' : 'none';
-        });
-
-        function log(msg, isSuccess = false) {
-            const now = new Date().toLocaleTimeString();
-            const line = document.createElement('div');
-            line.textContent = `[${now}] ${msg}`;
-            line.className = isSuccess ? 'success' : 'error';
-            logsDiv.appendChild(line);
-            logsDiv.scrollTop = logsDiv.scrollHeight;
-        }
-
-        clearLogBtn.addEventListener('click', () => {
-            logsDiv.innerHTML = '';
-            log('Logs cleared.', true);
-        });
-
-        function buildUrl(endpoint) {
-            let url = endpoint;
-            if (useProxyCb.checked && proxyInput.value.trim()) {
-                let p = proxyInput.value.trim();
-                if (!p.endsWith('/')) p += '/';
-                url = p + endpoint.replace(/^https?:\/\//, '');
-            }
-            return url;
-        }
-
-        async function fetchChannels(token, serverId, message, randomMentionEnabled, mentionCount) {
-            const url = buildUrl(`https://discord.com/api/v10/guilds/${serverId}/channels`);
-            try {
-                const res = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': token
-                    }
-                });
-                if (res.ok) {
-                    const channels = await res.json();
-                    channels.forEach(channel => {
-                        if (channel.type === 0) { // Check txt channels
-                            sendMessage(token, channel.id, message, randomMentionEnabled, mentionCount);
-                        }
-                    });
-                } else {
-                    log(`Error fetching channels for server ${serverId}: ${res.status}`);
-                }
-            } catch (err) {
-                log(`Exception fetching channels: ${err.message}`);
-            }
-        }
-
-        async function sendMessage(token, channelId, message, randomMentionEnabled, mentionCount) {
-            let finalMessage = message;
-
-            if (randomMentionEnabled) {
-                const mentions = await fetchRandomMembers(token, channelId, mentionCount);
-                if (mentions.length > 0) {
-                    finalMessage += ' ' + mentions.join(' ');
-                }
-            }
-
-            const url = buildUrl(`https://discord.com/api/v10/channels/${channelId}/messages`);
-            try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': token,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ content: finalMessage })
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    log(`Token ${token.slice(0, 10)}… OK: "${finalMessage}" (ID: ${data.id})`, true);
-                } else {
-                    log(`Token ${token.slice(0, 10)}… Error: Status ${res.status}`);
-                }
-            } catch (err) {
-                log(`Token ${token.slice(0, 10)}… Exception: ${err.message}`);
-            }
-        }
-
-        async function fetchRandomMembers(token, serverId, count) {
-            const url = buildUrl(`https://discord.com/api/v10/guilds/${serverId}/members`);
-            try {
-                const res = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': token
-                    }
-                });
-                if (res.ok) {
-                    const members = await res.json();
-                    const randomMembers = [];
-                    const memberCount = Math.min(count, members.length);
-
-                    // メンバーシャフル　せれくと
-                    for (let i = 0; i < memberCount; i++) {
-                        const randomIndex = Math.floor(Math.random() * members.length);
-                        randomMembers.push(`<@${members[randomIndex].user.id}>`);
-                        members.splice(randomIndex, 1);
-                    }
-
-                    return randomMembers;
-                } else {
-                    log(`Error fetching members for server ${serverId}: ${res.status}`);
-                    return [];
-                }
-            } catch (err) {
-                log(`Exception fetching members: ${err.message}`);
-                return [];
-            }
-        }
-
-        startBtn.addEventListener('click', () => {
-    const tokens = Array.from(document.querySelectorAll('.token-input')).map(i => i.value.trim()).filter(Boolean);
-    const serverId = document.getElementById('serverId').value.trim();
-    const allChannelsChecked = document.getElementById('allChannels').checked;
-    const intervalMs = parseInt(document.getElementById('interval').value, 10);
-    const message = document.getElementById('message').value;
-    const randomMentionEnabled = randomMentionCb.checked;
-    const mentionCount = parseInt(mentionCountInput.value, 10);
-
-    if (tokens.length === 0 || (modeSelect.value === 'spammer' && !message) || (randomMentionEnabled && (isNaN(mentionCount) || mentionCount < 1)) || (allChannelsChecked && !serverId) || isNaN(intervalMs) || intervalMs < 100) {
-        alert('Please fill all required fields correctly.');
-        return;
-    }
-
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
-    log('Running…');
-
-    const mode = modeSelect.value;
-
-    if (mode === 'spammer') {
-        const channelId = document.getElementById('channelId').value.trim();
-        if (allChannelsChecked) {
-            if (!serverId) {
-                alert('Server ID is required when sending to all channels.');
-                resetButtons();
-                return;
-            }
-            intervalId = setInterval(() => {
-                tokens.forEach(token => {
-                    fetchChannels(token, serverId, message, randomMentionEnabled, mentionCount);
-                });
-            }, intervalMs);
-        } else {
-            if (!channelId) {
-                alert('Channel ID is required.');
-                resetButtons();
-                return;
-            }
-            intervalId = setInterval(() => {
-                tokens.forEach(token => sendMessage(token, channelId, message, randomMentionEnabled, mentionCount));
-            }, intervalMs);
-        }
-    } else if (mode === 'groupspam') {
-        // Group spam
-    } else if (mode === 'reactionspam') {
-        const messageId = document.getElementById('messageId').value.trim();
-        // Reaction spam
-    } else if (mode === 'joinner') {
-        const serverLink = document.getElementById('serverLink').value.trim();
-        tokens.forEach(token => {
-            if (!serverLink) {
-                alert('Server link is required.');
-                resetButtons();
-                return;
-            }
-            joinServer(token, serverLink);
-        });
-    }
-});
-
-async function joinServer(token, serverLink) {
-    const url = `https://discord.com/api/v10/invites/${serverLink.split('/').pop()}`;
-    try {
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': token
-            }
-        });
-        if (res.ok) {
-            log(`Token ${token.slice(0, 10)}… Joined server successfully!`, true);
-        } else {
-            log(`Token ${token.slice(0, 10)}… Invalid token or server invite link (Status: ${res.status})`);
-            resetButtons();
-        }
-    } catch (err) {
-        log(`Token ${token.slice(0, 10)}… Exception: ${err.message}`);
-        resetButtons();
-    }
-}
-
-        stopBtn.addEventListener('click', () => {
-            if (intervalId) {
-                clearInterval(intervalId);
-                intervalId = null;
-                startBtn.disabled = false;
-                stopBtn.disabled = true;
-                log('Stopped.');
-            }
-        });
-
-        function resetButtons() {
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            intervalId = null; // Reset intervalId
-        }
-    </script>
 </body>
 </html>
